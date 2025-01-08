@@ -2,28 +2,36 @@ package clients.customer;
 
 import catalogue.Basket;
 import catalogue.Product;
+import clients.catalogue.CustomerBridge;
 import debug.DEBUG;
-import middle.MiddleFactory;
-import middle.OrderProcessing;
-import middle.StockException;
-import middle.StockReader;
+import javafx.scene.image.WritableImage;
+import middle.*;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import java.awt.image.BufferedImage;
+import javafx.embed.swing.SwingFXUtils;
+
 import java.util.Observable;
 
 /**
  * Implements the Model of the customer client
  */
-public class CustomerModel extends Observable
+//NEW 2 Adding the customer bridge so catalogue choice has connection with the customer
+public class CustomerModel extends Observable implements CustomerBridge
 {
+
+  @Override
+  public void addProductToCustomerClient(String productNumber) {
+    doCheck(productNumber);
+    doBuy();
+  }
   private Product     theProduct = null;          // Current product
   private Basket      theBasket  = null;          // Bought items
-
   private String      pn = "";                    // Product being processed
-
-  private StockReader     theStock     = null;
+  private StockReadWriter theStock = null;
+  //private StockReader     theStock     = null;
   private OrderProcessing theOrder     = null;
-  private ImageIcon       thePic       = null;
+  private ImageIcon thePic = null;
 
   /*
    * Construct the model of the Customer
@@ -32,8 +40,9 @@ public class CustomerModel extends Observable
   public CustomerModel(MiddleFactory mf)
   {
     try                                          // 
-    {  
-      theStock = mf.makeStockReader();           // Database access
+    {
+      theStock = mf.makeStockReadWriter();
+      theOrder = mf.makeOrderProcessing();          // Database access
     } catch ( Exception e )
     {
       DEBUG.error("CustomerModel.constructor\n" +
@@ -75,7 +84,10 @@ public class CustomerModel extends Observable
               pr.getQuantity() );               //    quantity
           pr.setQuantity( amount );             //   Require 1
           theBasket.add( pr );                  //   Add to basket
-          thePic = theStock.getImage( pn );     //    product
+
+          ImageIcon icon = theStock.getImage(pn);
+          thePic = theStock.getImage( pn );
+
         } else {                                //  F
           theAction =                           //   Inform
             pr.getDescription() +               //    product not
@@ -122,6 +134,29 @@ public class CustomerModel extends Observable
     setChanged(); notifyObservers("START only"); // Notify
   }
 
+  /**
+   *
+   */
+  public void doBuy(){
+    String action = "";
+    try {
+      if (theBasket != null && theBasket.size() > 1) {
+        Product product1 = theBasket.get( 0 );
+        boolean stockBought = theStock.buyStock(product1.getProductNum(),product1.getQuantity());
+        if (stockBought) {
+          action = "Added "+ product1.getProductNum();
+        }else{
+          action = "Not available in stock";
+        }
+      }else {
+        action = "No product has been selected";
+      }
+    }catch (StockException e) {
+      DEBUG.error("CustomerModel.doBuy", e.getMessage());
+      action = e.getMessage();
+    }
+    setChanged(); notifyObservers(action);
+  }
   /**
    * Make a new Basket
    * @return an instance of a new Basket

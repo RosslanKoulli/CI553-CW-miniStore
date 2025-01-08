@@ -6,6 +6,9 @@ import clients.backDoor.BackDoorView;
 import clients.cashier.CashierController;
 import clients.cashier.CashierModel;
 import clients.cashier.CashierView;
+import clients.catalogue.CatalogueController;
+import clients.catalogue.CatalogueModel;
+import clients.catalogue.CatalogueView;
 import clients.customer.CustomerController;
 import clients.customer.CustomerModel;
 import clients.customer.CustomerView;
@@ -51,9 +54,10 @@ public class Main extends Application
     MiddleFactory mlf = new LocalMiddleFactory();  // Direct access
     startCustomerGUI_MVC( mlf );
     startCashierGUI_MVC( mlf );
-    startCashierGUI_MVC( mlf ); // you can create multiple clients
     startPackingGUI_MVC( mlf );
     startBackDoorGUI_MVC( mlf );
+    //NEW 2 Added the catalogue
+    startCatalogueGUI_MVC( mlf);
   }
   
   /**
@@ -132,6 +136,19 @@ public class Main extends Application
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
+  }
+  /**
+   * NEW 2
+   * start the catalogue client - store items and user can pick and add them
+   * @param mlf A factory to create objects to access the stock list
+   */
+  public void startCatalogueGUI_MVC(MiddleFactory mlf ){
+    Stage  window = new Stage();
+    CatalogueModel model = new CatalogueModel(mlf);
+    CatalogueView view = new CatalogueView(window, mlf, 0, 0);
+    CatalogueController cont  = new CatalogueController( model, view );
+    view.setController( cont );
+    model.addObserver( view );
   }
   
 }

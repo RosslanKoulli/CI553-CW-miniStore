@@ -9,9 +9,9 @@ import middle.StockReader;
 import java.awt.image.BufferedImage;
 import java.util.Observable;
 import java.util.Observer;
-
 // NEW Changing the gui from javafx to swing.
 // NEW Imports needed, unnecessary code will be commented out
+
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -23,6 +23,28 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import java.awt.Graphics2D;
+
+import catalogue.Product;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+import middle.MiddleFactory;
+import middle.StockReader;
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
+import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
+import javafx.embed.swing.SwingFXUtils;
+import javax.swing.ImageIcon;
+import javafx.scene.layout.VBox;
+
 /**
  * Implements the Customer view.
  */
@@ -88,7 +110,7 @@ public class CustomerView implements Observer
 
     Scene scene = new Scene(grid, W, H);
     stage.setScene(scene);
-    stage.setTitle("Customer client javaFX ");
+    stage.setTitle("Customer client javaFX version");
     stage.setX(x);
     stage.setY(y);
     stage.show();
