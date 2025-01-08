@@ -6,44 +6,46 @@ import middle.Names;
 import middle.RemoteMiddleFactory;
 
 import javax.swing.*;
+// NEW Changing from swing to javafx
+import javafx.application.Application;
+import javafx.stage.Stage;
 
 /**
  * The standalone Cashier Client.
  */
 
 
-public class CashierClient
+public class CashierClient extends Application
 {
    public static void main (String args[])
    {
-     String stockURL = args.length < 1     // URL of stock RW
-                     ? Names.STOCK_RW      //  default  location
-                     : args[0];            //  supplied location
-     String orderURL = args.length < 2     // URL of order
-                     ? Names.ORDER         //  default  location
-                     : args[1];            //  supplied location
-     
-    RemoteMiddleFactory mrf = new RemoteMiddleFactory();
-    mrf.setStockRWInfo( stockURL );
-    mrf.setOrderInfo  ( orderURL );        //
-    displayGUI(mrf);                       // Create GUI
+       launch(args);
+   }
+
+  @Override
+  public void start(Stage primaryStage) {
+       String stockURL = getParameters().getRaw().size() < 1
+               ?Names.STOCK_RW
+               : getParameters().getRaw().get(0);
+       String orderURL = getParameters().getRaw().size() < 2
+               ? Names.ORDER
+               : getParameters().getRaw().get(1);
+       RemoteMiddleFactory remoteMiddleFactory = new RemoteMiddleFactory();
+       remoteMiddleFactory.setStockRWInfo(stockURL);
+       remoteMiddleFactory.setOrderInfo(orderURL);
+       displayGUI(remoteMiddleFactory,primaryStage);
   }
-
-
-  private static void displayGUI(MiddleFactory mf)
+  private static void displayGUI(MiddleFactory mf, Stage window)
   {     
-    JFrame  window = new JFrame();
-     
+
     window.setTitle( "Cashier Client (MVC RMI)");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    
+
     CashierModel      model = new CashierModel(mf);
-    CashierView       view  = new CashierView( window, mf, 0, 0 );
+    CashierView       view  = new CashierView(window, mf, 0, 0 );
     CashierController cont  = new CashierController( model, view );
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Display Screen
     model.askForUpdate();
   }
 }

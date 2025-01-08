@@ -14,8 +14,10 @@ import clients.packing.PackingModel;
 import clients.packing.PackingView;
 import middle.LocalMiddleFactory;
 import middle.MiddleFactory;
-import javax.swing.*;
 import java.awt.*;
+import javafx.application.Application;
+import javafx.stage.Stage;
+
 
 /**
  * Starts all the clients (user interface)  as a single application.
@@ -26,16 +28,23 @@ import java.awt.*;
  * @version year-2024
  */
 
-class Main
+
+// NEW Adjusting the Main so that it works with javaFX instead of swing
+public class Main extends Application
 {
   public static void main (String args[])
   {
-    new Main().begin();
+    launch(args);
   }
 
+  @Override
+  public void start(Stage primaryStage) {
+    begin();
+  }
   /**
    * Starts the system (Non distributed)
    */
+
   public void begin()
   {
     //DEBUG.set(true); /* Lots of debug info */
@@ -53,9 +62,9 @@ class Main
   */
   public void startCustomerGUI_MVC(MiddleFactory mlf )
   {
-    JFrame  window = new JFrame();
+    //NEW Changing from swing to javaFX
+    Stage  window = new Stage();
     window.setTitle( "Customer Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     Dimension pos = PosOnScrn.getPos();
     
     CustomerModel model      = new CustomerModel(mlf);
@@ -64,7 +73,7 @@ class Main
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model, ---view is observer, model is Observable
-    window.setVisible(true);         // start Screen
+
   }
 
   /**
@@ -73,18 +82,16 @@ class Main
    */
   public void startCashierGUI_MVC(MiddleFactory mlf )
   {
-    JFrame  window = new JFrame();
+    Stage  window = new Stage();
     window.setTitle( "Cashier Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     Dimension pos = PosOnScrn.getPos();
     
     CashierModel model      = new CashierModel(mlf);
-    CashierView view        = new CashierView( window, mlf, pos.width, pos.height );
+    CashierView view        = new CashierView(window, mlf, pos.width, pos.height );
     CashierController cont  = new CashierController( model, view );
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
     model.askForUpdate();            // Initial display
   }
 
@@ -95,10 +102,8 @@ class Main
   
   public void startPackingGUI_MVC(MiddleFactory mlf)
   {
-    JFrame  window = new JFrame();
-
+    Stage  window = new Stage();
     window.setTitle( "Packing Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     Dimension pos = PosOnScrn.getPos();
     
     PackingModel model      = new PackingModel(mlf);
@@ -107,7 +112,7 @@ class Main
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
+
   }
   
   /**
@@ -116,10 +121,9 @@ class Main
    */
   public void startBackDoorGUI_MVC(MiddleFactory mlf )
   {
-    JFrame  window = new JFrame();
+    Stage window = new Stage();
 
     window.setTitle( "BackDoor Client MVC");
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     Dimension pos = PosOnScrn.getPos();
     
     BackDoorModel model      = new BackDoorModel(mlf);
@@ -128,7 +132,6 @@ class Main
     view.setController( cont );
 
     model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Make window visible
   }
   
 }

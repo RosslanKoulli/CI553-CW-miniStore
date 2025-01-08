@@ -3,11 +3,19 @@ package clients.backDoor;
 import middle.MiddleFactory;
 import middle.StockReadWriter;
 
-import javax.swing.*;
-import java.awt.*;
+
 import java.util.Observable;
 import java.util.Observer;
-
+// NEW Switching the code from swing to javafx
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 /**
  * Implements the Customer view.
  */
@@ -18,86 +26,75 @@ public class BackDoorView implements Observer
   private static final String CLEAR    = "Clear";
   private static final String QUERY    = "Query";
  
-  private static final int H = 300;       // Height of window pixels
-  private static final int W = 400;       // Width  of window pixels
+  private static final int H = 400;       // Height of window pixels
+  private static final int W = 500;       // Width  of window pixels
 
-  private final JLabel      pageTitle  = new JLabel();
-  private final JLabel      theAction  = new JLabel();
-  private final JTextField  theInput   = new JTextField();
-  private final JTextField  theInputNo = new JTextField();
-  private final JTextArea   theOutput  = new JTextArea();
-  private final JScrollPane theSP      = new JScrollPane();
-  private final JButton     theBtClear = new JButton( CLEAR );
-  private final JButton     theBtRStock = new JButton( RESTOCK );
-  private final JButton     theBtQuery = new JButton( QUERY );
-  
+  private final Label      pageTitle  = new Label();
+  private final Label      theAction  = new Label();
+  private final TextField  theInput   = new TextField();
+  private final TextField  theInputNo = new TextField();
+  private final TextArea   theOutput  = new TextArea();
+  private final Button     theBtClear = new Button( CLEAR );
+  private final Button     theBtRStock = new Button( RESTOCK );
+  private final Button     theBtQuery = new Button( QUERY );
+
   private StockReadWriter theStock     = null;
   private BackDoorController cont= null;
 
   /**
    * Construct the view
-   * @param rpc   Window in which to construct
+   * @param stage   Window in which to construct
    * @param mf    Factor to deliver order and stock objects
    * @param x     x-cordinate of position of window on screen 
    * @param y     y-cordinate of position of window on screen  
    */
-  public BackDoorView(  RootPaneContainer rpc, MiddleFactory mf, int x, int y )
+  public BackDoorView(  Stage stage, MiddleFactory mf, int x, int y )
   {
-    try                                             // 
-    {      
+    try {
       theStock = mf.makeStockReadWriter();          // Database access
-    } catch ( Exception e )
-    {
+    } catch ( Exception e ) {
       System.out.println("Exception: " + e.getMessage() );
     }
-    Container cp         = rpc.getContentPane();    // Content Pane
-    Container rootWindow = (Container) rpc;         // Root Window
-    cp.setLayout(null);                             // No layout manager
-    rootWindow.setSize( W, H );                     // Size of Window
-    rootWindow.setLocation( x, y );
-    
-    Font f = new Font("Monospaced",Font.PLAIN,12);  // Font f is
 
-    pageTitle.setBounds( 110, 0 , 270, 20 );       
-    pageTitle.setText( "Staff check and manage stock" );                        
-    cp.add( pageTitle );
-    
-    theBtQuery.setBounds( 16, 25+60*0, 80, 40 );    // Buy button 
-    theBtQuery.addActionListener(                   // Call back code
-      e -> cont.doQuery( theInput.getText() ) );
-    cp.add( theBtQuery );                           //  Add to canvas
+    // Setting up the layout
+    GridPane grid = new GridPane();
+    grid.setHgap( 10 );
+    grid.setVgap( 10 );
+    grid.setPadding( new Insets(10) );
 
-    theBtRStock.setBounds( 16, 25+60*1, 80, 40 );   // Check Button
-    theBtRStock.addActionListener(                  // Call back code
-      e -> cont.doRStock( theInput.getText(),
-                          theInputNo.getText() ) );
-    cp.add( theBtRStock );                          //  Add to canvas
+    // Setting up the ui components
+    pageTitle.setText("Staff check and manage stock");
+    grid.add(pageTitle, 1, 0,2,1);
 
-    theBtClear.setBounds( 16, 25+60*2, 80, 40 );    // Buy button 
-    theBtClear.addActionListener(                   // Call back code
-      e -> cont.doClear() );
-    cp.add( theBtClear );                           //  Add to canvas
+    grid.add(theBtQuery, 0,1);
+    theBtQuery.setOnAction(e -> cont.doQuery(theInput.getText()));
+    grid.add(theAction,1,1,2,1);
 
- 
-    theAction.setBounds( 110, 25 , 270, 20 );       // Message area
-    theAction.setText( "" );                        // Blank
-    cp.add( theAction );                            //  Add to canvas
+    grid.add(theBtRStock, 0,2);
+    theBtRStock.setOnAction(e ->cont.doRStock(theInput.getText(), theInputNo.getText()));
+    grid.add(theInput, 1,2);
+    grid.add(theInputNo, 2,2);
 
-    theInput.setBounds( 110, 50, 120, 40 );         // Input Area
-    theInput.setText("");                           // Blank
-    cp.add( theInput );                             //  Add to canvas
-    
-    theInputNo.setBounds( 260, 50, 120, 40 );       // Input Area
-    theInputNo.setText("0");                        // 0
-    cp.add( theInputNo );                           //  Add to canvas
 
-    theSP.setBounds( 110, 100, 270, 160 );          // Scrolling pane
-    theOutput.setText( "" );                        //  Blank
-    theOutput.setFont( f );                         //  Uses font  
-    cp.add( theSP );                                //  Add to canvas
-    theSP.getViewport().add( theOutput );           //  In TextArea
-    rootWindow.setVisible( true );                  // Make visible
-    theInput.requestFocus();                        // Focus is here
+    grid.add(theBtClear, 0,3);
+    theBtClear.setOnAction(e ->cont.doClear());
+
+    theOutput.setPrefRowCount(10);
+    theOutput.setEditable(false);
+    grid.add(theOutput,1,3,2,2);
+
+    theInput.setPromptText("Product ID");
+    theInputNo.setPromptText("Quantity");
+    theInputNo.setText("0");
+
+
+    Scene scene = new Scene(grid,W,H);
+    stage.setScene(scene);
+    stage.setTitle("Backdoor client javafx mvc");
+    stage.setX(x);
+    stage.setY(y);
+    stage.show();
+    theInput.requestFocus();
   }
   
   public void setController( BackDoorController c )
@@ -115,10 +112,13 @@ public class BackDoorView implements Observer
   {
     BackDoorModel model  = (BackDoorModel) modelC;
     String        message = (String) arg;
-    theAction.setText( message );
-    
-    theOutput.setText( model.getBasket().getDetails() );
-    theInput.requestFocus();
+    Platform.runLater(()->{
+      theAction.setText( message );
+
+      theOutput.setText( model.getBasket().getDetails() );
+      theInput.requestFocus();
+
+    });
   }
 
 }

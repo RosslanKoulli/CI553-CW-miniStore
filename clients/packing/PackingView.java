@@ -4,11 +4,18 @@ import catalogue.Basket;
 import middle.MiddleFactory;
 import middle.OrderProcessing;
 
-import javax.swing.*;
-import java.awt.*;
+
 import java.util.Observable;
 import java.util.Observer;
-
+//NEW Switch from swing to javafx
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 /**
  * Implements the Packing view.
 
@@ -21,24 +28,23 @@ public class PackingView implements Observer
   private static final int H = 300;       // Height of window pixels
   private static final int W = 400;       // Width  of window pixels
 
-  private final JLabel      pageTitle  = new JLabel();
-  private final JLabel      theAction  = new JLabel();
-  private final JTextArea   theOutput  = new JTextArea();
-  private final JScrollPane theSP      = new JScrollPane();
-  private final JButton     theBtPack= new JButton( PACKED );
+  private final Label      pageTitle  = new Label();
+  private final Label      theAction  = new Label();
+  private final TextArea   theOutput  = new TextArea();
+  private final Button     theBtPack= new Button( PACKED );
  
   private OrderProcessing theOrder     = null;
-  
+
   private PackingController cont= null;
 
   /**
    * Construct the view
-   * @param rpc   Window in which to construct
+   * @param stage   Window in which to construct
    * @param mf    Factor to deliver order and stock objects
    * @param x     x-cordinate of position of window on screen 
    * @param y     y-cordinate of position of window on screen  
    */
-  public PackingView(  RootPaneContainer rpc, MiddleFactory mf, int x, int y )
+  public PackingView(  Stage stage, MiddleFactory mf, int x, int y )
   {
     try                                           // 
     {      
@@ -47,33 +53,30 @@ public class PackingView implements Observer
     {
       System.out.println("Exception: " + e.getMessage() );
     }
-    Container cp         = rpc.getContentPane();    // Content Pane
-    Container rootWindow = (Container) rpc;         // Root Window
-    cp.setLayout(null);                             // No layout manager
-    rootWindow.setSize( W, H );                     // Size of Window
-    rootWindow.setLocation( x, y );
-    
-    Font f = new Font("Monospaced",Font.PLAIN,12);  // Font f is
-    
-    pageTitle.setBounds( 110, 0 , 270, 20 );       
+    // Setting up the layout
+    GridPane grid = new GridPane();
+    grid.setPadding(new Insets(10));
+    grid.setHgap(10);
+    grid.setVgap(10);
+
+    // Setting up the Ui components
     pageTitle.setText( "Packing Bought Order" );                        
-    cp.add( pageTitle );
+    grid.add( pageTitle,1,0,2,1 );
 
-    theBtPack.setBounds( 16, 25+60*0, 80, 40 );   // Check Button
-    theBtPack.addActionListener(                   // Call back code
-      e -> cont.doPacked() );
-    cp.add( theBtPack );                          //  Add to canvas
+    theBtPack.setOnAction(e -> cont.doPacked());
+    grid.add(theBtPack, 0,1);
 
-    theAction.setBounds( 110, 25 , 270, 20 );       // Message area
-    theAction.setText( "" );                        // Blank
-    cp.add( theAction );                            //  Add to canvas
+    grid.add(theAction,1,1,2,1);
 
-    theSP.setBounds( 110, 55, 270, 205 );           // Scrolling pane
-    theOutput.setText( "" );                        //  Blank
-    theOutput.setFont( f );                         //  Uses font  
-    cp.add( theSP );                                //  Add to canvas
-    theSP.getViewport().add( theOutput );           //  In TextArea
-    rootWindow.setVisible( true );                  // Make visible
+    theOutput.setPrefRowCount(15);
+    theOutput.setEditable(false);
+    grid.add(theOutput,1,2,2,1);
+
+    Scene scene = new Scene(grid,W,H);
+    stage.setScene(scene);
+    stage.setX(x);
+    stage.setY(y);
+    stage.show();
   }
   
   public void setController( PackingController c )
@@ -91,15 +94,18 @@ public class PackingView implements Observer
   {
 	  PackingModel model  = (PackingModel) modelC;
     String        message = (String) arg;
-    theAction.setText( message );
-    
-    Basket basket =  model.getBasket();
-    if ( basket != null )
-    {
-      theOutput.setText( basket.getDetails() );
-    } else {
-      theOutput.setText("");
-    }
+
+    Platform.runLater( () -> {
+      theAction.setText( message );
+
+      Basket basket =  model.getBasket();
+      if ( basket != null )
+      {
+        theOutput.setText( basket.getDetails() );
+      } else {
+        theOutput.setText("");
+      }
+    } );
   }
 
 }

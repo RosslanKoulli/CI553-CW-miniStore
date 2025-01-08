@@ -3,40 +3,40 @@ package clients.customer;
 import clients.customer.CustomerController;
 import clients.customer.CustomerModel;
 import clients.customer.CustomerView;
+import javafx.application.Application;
 import middle.MiddleFactory;
 import middle.Names;
 import middle.RemoteMiddleFactory;
-
+import javafx.stage.Stage;
 import javax.swing.*;
+import static clients.packing.PackingClient.displayGUI;
+
 
 /**
  * The standalone Customer Client
  */
-public class CustomerClient
-{
-  public static void main (String args[])
-  {
-    String stockURL = args.length < 1         // URL of stock R
-                    ? Names.STOCK_R           //  default  location
-                    : args[0];                //  supplied location
-    
-    RemoteMiddleFactory mrf = new RemoteMiddleFactory();
-    mrf.setStockRInfo( stockURL );
-    displayGUI(mrf);                          // Create GUI
-  }
-   
-  private static void displayGUI(MiddleFactory mf)
-  {
-    JFrame  window = new JFrame();     
-    window.setTitle( "Customer Client (MVC RMI)" );
-    window.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    
-    CustomerModel model = new CustomerModel(mf);
-    CustomerView  view  = new CustomerView( window, mf, 0, 0 );
-    CustomerController cont  = new CustomerController( model, view );
-    view.setController( cont );
+//NEW This is the new customer client
+public class CustomerClient extends Application{
+  @Override
+  public void start(Stage primaryStage){
+    String stockURL = getParameters().getRaw().size() < 1
+            ? Names.STOCK_R
+            : getParameters().getRaw().get(0);
 
-    model.addObserver( view );       // Add observer to the model
-    window.setVisible(true);         // Display Scree
+    RemoteMiddleFactory remoteMiddleFactory = new RemoteMiddleFactory();
+    remoteMiddleFactory.setStockRInfo(stockURL);
+    displayGUI(remoteMiddleFactory, primaryStage);
   }
+  private void displayGUI(MiddleFactory middleFactory,Stage primaryStage){
+    CustomerModel model = new CustomerModel(middleFactory);
+    CustomerView view = new CustomerView(primaryStage, middleFactory, 0,0);
+    CustomerController controller = new CustomerController(model, view);
+    view.setController(controller);
+    model.addObserver(view);
+  }
+  public static void main(String[] args) {
+    launch(args);
+  }
+
 }
+
